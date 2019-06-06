@@ -1,0 +1,112 @@
+var realFileBtn = document.getElementById("real-file");
+var customBtn = document.getElementById("upload-logo");
+var customTxt = document.getElementById("custom-text")
+var 
+
+function myFunction() {
+  realFileBtn.click();
+  var x = document.getElementById('default-logo');
+  var id = 1;
+  if (x.style.display ='none') {
+    x.style.display = 'inline';
+  } 
+  debugger
+  $.ajax( {
+    method: "PUT",
+    url: ('api/v1/engage_branding/' + id),
+    data: (picture),
+    success: function() {
+      swal("Success", "Logo Updated Successfully", "Success");
+    },
+    error: function(e){
+      swal ("Error",e.message, "Error");
+    }
+  });
+}
+
+function readURL(input) {
+if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $('#blah')
+            .attr('src', e.target.result);
+            
+    };
+
+    reader.readAsDataURL(input.files[0]);   
+  }
+}
+
+function ShowImage(){
+  var defaultBtn = document.getElementById("default-logo");
+  var defaultImg = document.getElementById("blah");
+  defaultImg.src = "/images/members-portal-dark.png";
+  defaultBtn.style.display = "none";
+}
+
+
+
+
+module Api
+  module V1
+    # app/controllers/api/v1/engage_logo_controller.rb
+    class EngageLogoController < ApplicationController
+      before_action :setup_picture, only: :update
+      resource_description do
+        error 401, 'unauthorized'
+        error 500, 'server error'
+        error 422, 'unprocessable - likely a bad provision'
+        meta 'Required Headers' => "Authorization Token token =< token> \n Authorization provision =<provision>"
+      end
+
+      def setup_picture
+        if params[:picture].present?
+          tempfile = Tempfile.new('fileupload')
+          tempfile.binmode
+          tempfile.write(Base64.decode64(params[:picture]))
+          uploaded_file = ActionDispatch::Http::UploadedFile.new(tempfile: tempfile)
+          params[:picture] = uploaded_file
+          params[:picture].rewind
+        end
+      end
+
+      api :PUT, '/engage_branding/:id'
+      def update
+        @engage = EngageBranding.find_or_create_by(category:params[:id])
+        if @engage.picture(params[:picture].read)
+          render json: @engage
+        else
+          unprocessable('Could not update picture')
+        end
+      end
+    end
+  end
+end
+
+
+
+# app/models/engage_branding.rb
+class EngageBranding < SuranDatabase
+  self.table_name = 'engage.branding'
+  self.primary_key = 'id'
+
+  attr_accessor:picture_file
+
+  def picture_file
+    return '' if logo.nil? || logo == 'f'
+    "/api/v1/engage_logo/#{id}/picture"
+  end
+
+  def picture(picture)
+    begin
+      log_level = ActiveRecord::Base.logger
+      ActiveRecord::Base.logger = nil
+      update(logo: picture)
+    rescue => e
+      ActiveRecord::Base.logger = log_level
+      Rails.logger.info e.message
+      return false
+    end
+      ActiveRecord::Base.logger = log_level
+  end
+end
