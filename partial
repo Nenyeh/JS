@@ -1,0 +1,4 @@
+<label for='org-name' class='col-xs-12 col-sm-3 control-label'>Logo</label>
+            <input type="file" id="real-file" style="display:none" onchange="readURL(this);"/>
+            <button type="button" id ='upload-logo' onclick= "button_click()"> Upload  </button>
+            <img id="blah" src="/images/members-portal-dark.png" alt="your image"/> 
