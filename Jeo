@@ -1,0 +1,78 @@
+var realFileBtn = document.getElementById("real-file");
+var customBtn = document.getElementById("upload-logo");
+var customTxt = document.getElementById("custom-text")
+var picture;
+
+
+function button_click ()
+{
+  var x = document.getElementById("real-file");
+  x.style.display = "none" 
+  x.onchange= readURL(this)
+realFileBtn.click();
+
+}
+
+function myFunction() {
+  var x = document.getElementById('default-logo');
+  var id = 1;
+  if (x.style.display ='none') {
+    x.style.display = 'inline';
+  } 
+
+  
+  $.ajax( {
+    method: "POST",
+    url: 'api/v1/engage_branding/' + id,
+    data: picture,
+    success: function() {
+      swal("Success", "Logo Updated Successfully", "Success");
+    },
+    error: function(e){
+      swal ("Error",e.message, "Error");
+    }
+  });
+}
+
+
+
+/*$.ajax({
+        var pic = picture
+        url : 'api/v1/engage_branding/' + id,
+        method : "post",
+        data : {picture: JSON.stringify(pic)}
+        success: function() {
+          swal("Success", "Logo Updated Successfully", "Success");
+    },
+        error: function(e){
+          swal ("Error",e.message, "Error");
+    }
+    });*/
+
+
+
+function readURL(input) {
+if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      debugger; 
+      if (realFileBtn.files[0].type.length == 10 ){ 
+         picture = reader.result.substr(23); //strip the beginning 23 characters of metadata for jpeg and other 4 letter formats
+      }
+      else{
+          picture = reader.result.substr(22); //strip the beginning 22 characters of metadata for png, gif and other 3 letter formats
+      }
+        $('#blah').attr('src', e.target.result);
+       myFunction();       
+    };
+    reader.readAsDataURL(realFileBtn.files[0]); 
+  
+  }
+}
+
+function ShowImage(){
+  var defaultBtn = document.getElementById("default-logo");
+  var defaultImg = document.getElementById("blah");
+  defaultImg.src = "/images/members-portal-dark.png";
+  defaultBtn.style.display = "none";
+}
